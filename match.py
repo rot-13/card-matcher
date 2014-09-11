@@ -1,9 +1,7 @@
-import numpy as np
+import time
 import cv2
 import pickle
 import sys
-import time
-from matplotlib import pyplot as plt
 import os.path
 
 # Initiate SIFT detector
@@ -33,11 +31,8 @@ def load_images_descriptors(path):
 
 def find_match(img_to_match_path, images):
     img_to_match = cv2.imread(img_to_match_path, 0) # trainImage
-    img_to_match = cv2.resize(img_to_match, (0,0), fx=0.25, fy=0.25) #we need to scale it down to a low res
-    start = time.clock()
+    img_to_match = cv2.resize(img_to_match, (0,0), fx=0.10, fy=0.10) #we need to scale it down to a low res
     kp2, des2 = sift.detectAndCompute(img_to_match, None)
-    end = time.clock()
-    print end - start
 
     # FLANN parameters
     FLANN_INDEX_KDTREE = 1
