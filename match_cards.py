@@ -2,18 +2,19 @@ import glob
 import match
 import sys
 import os
+import cv2
 
 from operator import itemgetter
 
-def find_cluster(img):
+def find_cluster(img, resize_factor=0.25):
   print 'Searching for cluster...'
   template_files = glob.glob('./clusters/*/*/template.png')
   template_files = [f for f in template_files if os.stat(f).st_size > 0]
   template_descriptors = match.load_images_descriptors(template_files, './templates.db')
 
   allMatches = []
-  input_descriptors = match.descriptors_for_input_image(img)
-  for imgMatch in match.find_match(input_descriptors, template_descriptors, top=4):
+  input_descriptors = match.descriptors_for_input_image(img, resize_factor)
+  for imgMatch in match.find_match(input_descriptors, template_descriptors, top=2):
     print 'Matching ', os.path.dirname(imgMatch[0]), '...'
     cluster_dir = os.path.dirname(imgMatch[0])
     cluster_files = glob.glob(os.path.join(cluster_dir, '*.png'))
