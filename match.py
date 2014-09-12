@@ -7,18 +7,19 @@ import os.path
 # Initiate SIFT detector
 sift = cv2.SIFT()
 
-def load_images_descriptors(path):
+# first parameter is a list of image file names
+# second parameter is the path to the db file
+def load_images_descriptors(imagesList, images_db_path):
     images = []
-    images_db_path = path + '/images.db'
     if os.path.exists(images_db_path):
         db_file = open(images_db_path, 'r')
         images = pickle.load(db_file)
         db_file.close()
     else:
-        for filename in os.listdir(path):
+        for filename in imagesList:
             if not filename.endswith(".png"):
                 continue
-            current_image = cv2.imread(path + '/' + filename,0)  # queryImage
+            current_image = cv2.imread(filename,0)  # queryImage
 
             # find the keypoints and descriptors with SIFT
             print 'Detecting... ', filename
@@ -53,15 +54,21 @@ def find_match(img_to_match_path, images):
                     goodMatches += 1
         print img['filename'], goodMatches
 
-####
-# argv[1]: card to find a match for.
-# argv[2]: path to cards to match against.
-####
-card_to_match_path = sys.argv[1]
-current_path = sys.argv[2]
+def main():
+  ####
+  # argv[1]: card to find a match for.
+  # argv[2]: path to cards to match against.
+  ####
+  card_to_match_path = sys.argv[1]
+  current_path = sys.argv[2]
 
-images = load_images_descriptors(current_path)
-start = time.clock()
-find_match(card_to_match_path, images)
-end = time.clock()
-print end - start
+  images_db_path = current_path + '/images.db'
+  image_filenames = [os.path.join(current_path, fileName) for fileName in os.listdir(current_path)]
+  images = load_images_descriptors(image_filenames, images_db_path)
+  start = time.clock()
+  find_match(card_to_match_path, images)
+  end = time.clock()
+  print end - start
+
+if __name__ == "__main__":
+  main()
