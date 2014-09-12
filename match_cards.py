@@ -6,6 +6,8 @@ import cv2
 import time
 import json
 from operator import itemgetter
+from multiprocessing import Pool
+from functools import partial
 
 def find_card_in_clusters(img, resize_factor=0.25):
   alls = time.clock()
@@ -23,24 +25,30 @@ def find_card_in_clusters(img, resize_factor=0.25):
   print 'Loaded input image in:', time.clock() - start, 'seconds'
   print 'Searching for top clusters...'
   start = time.clock()
-  cluster_matches = match.find_match(input_descriptors, template_descriptors, top=2)
+  cluster_matches = match.find_match(input_descriptors, template_descriptors, top=8)
   print 'Found top clusters in:', time.clock() - start, 'seconds'
   start = time.clock()
   print 'Searching for image in top clusters...'
-  for imgMatch in cluster_matches:
-    print 'Matching ', os.path.dirname(imgMatch[0]), '...'
-    cluster_dir = os.path.dirname(imgMatch[0])
-    cluster_files = glob.glob(os.path.join(cluster_dir, '*.png'))
-    cluster_files = [f for f in cluster_files if not f.endswith('template.png')]
-
-    cluster_descriptors = match.load_images_descriptors(cluster_files, os.path.join(cluster_dir, 'images.db'))
-    allMatches += match.find_match(input_descriptors, cluster_descriptors)
-
+  p = Pool(4)
+  clusters_tuples = [(c, input_descriptors) for c in cluster_matches]
+  allMatches = p.map(find_matches_in_cluster, clusters_tuples)
+  allMatches = reduce(lambda x, y: x+y, allMatches)
   allMatches = sorted(allMatches, key = itemgetter(1), reverse=True)
   print 'Found match in:', time.clock() - start, 'seconds'
   print 'Total time:', time.clock() - alls, 'seconds'
 
   return allMatches[0]
+
+def find_matches_in_cluster(tup):
+    cluster, input_descriptors = tup
+    imgMatch = cluster[0]
+    print 'Matching ', os.path.dirname(imgMatch), '...'
+    cluster_dir = os.path.dirname(imgMatch)
+    cluster_files = glob.glob(os.path.join(cluster_dir, '*.png'))
+    cluster_files = [f for f in cluster_files if not f.endswith('template.png')]
+
+    cluster_descriptors = match.load_images_descriptors(cluster_files, os.path.join(cluster_dir, 'images.db'))
+    return match.find_match(input_descriptors, cluster_descriptors)
 
 def print_card_from_path(path):
   card_code = os.path.basename(path).split('.')[0]
