@@ -4,10 +4,10 @@ import sys
 import os
 import cv2
 import time
-
+import json
 from operator import itemgetter
 
-def find_cluster(img, resize_factor=0.25):
+def find_card_in_clusters(img, resize_factor=0.25):
   alls = time.clock()
   start = time.clock()
   print 'Loading clusters descriptors...'
@@ -21,10 +21,10 @@ def find_cluster(img, resize_factor=0.25):
   print 'Loading input image descriptors...'
   input_descriptors = match.descriptors_for_input_image(img, resize_factor)
   print 'Loaded input image in:', time.clock() - start, 'seconds'
-  print 'Searching for cluster...'
+  print 'Searching for top clusters...'
   start = time.clock()
   cluster_matches = match.find_match(input_descriptors, template_descriptors, top=2)
-  print 'Found clusters in:', time.clock() - start, 'seconds'
+  print 'Found top clusters in:', time.clock() - start, 'seconds'
   start = time.clock()
   print 'Searching for image in top clusters...'
   for imgMatch in cluster_matches:
@@ -42,11 +42,17 @@ def find_cluster(img, resize_factor=0.25):
 
   return allMatches[0]
 
+def print_card_from_path(path):
+  card_code = os.path.basename(path).split('.')[0]
+  with open('cards.json') as data_file:
+    cards = json.load(data_file)
+    card = [c for c in cards if c["code"] == card_code]
+    print 'Found card', card[0]["title"], 'with id', card_code
+
 def main():
   img = cv2.imread(sys.argv[1], 0)
-  card_file_name = find_cluster(img)[0]
-
-  print os.path.basename(card_file_name).split('.')[0]
+  card_file_name = find_card_in_clusters(img)[0]
+  print_card_from_path(card_file_name)
 
 if __name__ == "__main__":
   main()

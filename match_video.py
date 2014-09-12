@@ -15,7 +15,8 @@ while(True):
         # Our operations on the frame come here
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         start = time.clock()
-        card_file_name = match_cards.find_cluster(img, 0.8)[0]
+        card_file_name = match_cards.find_card_in_clusters(img, 0.8)[0]
+        match_cards.print_card_from_path(card_file_name)
         print time.clock() - start
 
         card_id = os.path.basename(card_file_name).split('.')[0]
