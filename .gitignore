@@ -1,1 +1,2 @@
-clusters/
+clusters/**/*.*
+!clusters/**/*template*
