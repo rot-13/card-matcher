@@ -6,7 +6,8 @@ import os.path
 from operator import itemgetter
 
 # Initiate SIFT detector
-sift = cv2.SIFT()
+sift = cv2.SURF()
+sift.upright = 1
 
 def png_to_grayscale_and_mask(img):
   if len(img.shape) > 2 and img.shape[2] > 3:
@@ -34,7 +35,7 @@ def load_images_descriptors(imagesList, images_db_path):
 
             # find the keypoints and descriptors with SIFT
             print 'Detecting... ', filename
-            kp1, des1 = sift.detectAndCompute(grayscale, mask)
+            kp1, des1 = sift.detectAndCompute(grayscale, None)
             matchImg = cv2.drawKeypoints(grayscale, kp1)
             images.append({'filename': filename, 'descriptor': des1 })
         db_file = open(images_db_path, 'w')
@@ -43,7 +44,7 @@ def load_images_descriptors(imagesList, images_db_path):
     return images
 
 def descriptors_for_input_image(img_to_match):
-    img_to_match = cv2.resize(img_to_match, (0,0), fx=0.20, fy=0.20) #we need to scale it down to a low res
+    #img_to_match = cv2.resize(img_to_match, (0,0), fx=0.20, fy=0.20) #we need to scale it down to a low res
     kp2, des2 = sift.detectAndCompute(img_to_match, None)
     return des2
 

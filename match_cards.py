@@ -13,7 +13,7 @@ def find_cluster(img):
 
   allMatches = []
   input_descriptors = match.descriptors_for_input_image(img)
-  for imgMatch in match.find_match(input_descriptors, template_descriptors, top=2):
+  for imgMatch in match.find_match(input_descriptors, template_descriptors, top=4):
     print 'Matching ', os.path.dirname(imgMatch[0]), '...'
     cluster_dir = os.path.dirname(imgMatch[0])
     cluster_files = glob.glob(os.path.join(cluster_dir, '*.png'))
@@ -24,11 +24,13 @@ def find_cluster(img):
 
   allMatches = sorted(allMatches, key = itemgetter(1), reverse=True)
 
-  print allMatches[0]
+  return allMatches[0]
 
 def main():
   img = cv2.imread(sys.argv[1], 0)
-  find_cluster(img)
+  card_file_name = find_cluster(img)[0]
+
+  print os.path.basename(card_file_name).split('.')[0]
 
 if __name__ == "__main__":
   main()
