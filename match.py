@@ -1,11 +1,21 @@
 import time
-import cv2
+import cv2, cv
 import pickle
 import sys
 import os.path
+from operator import itemgetter
 
 # Initiate SIFT detector
 sift = cv2.SIFT()
+
+def png_to_grayscale_and_mask(img):
+  if len(img.shape) > 2 and img.shape[2] > 3:
+    mask = img[:,:,3]
+  else:
+    mask = None
+  color = img[:,:,range(0,3)]
+  grayscale = cv2.cvtColor(color, cv.CV_BGR2GRAY)
+  return (grayscale, mask)
 
 # first parameter is a list of image file names
 # second parameter is the path to the db file
@@ -19,20 +29,22 @@ def load_images_descriptors(imagesList, images_db_path):
         for filename in imagesList:
             if not filename.endswith(".png"):
                 continue
-            current_image = cv2.imread(filename,0)  # queryImage
+            current_image = cv2.imread(filename,-1)  # queryImage
+            grayscale, mask = png_to_grayscale_and_mask(current_image)
 
             # find the keypoints and descriptors with SIFT
             print 'Detecting... ', filename
-            kp1, des1 = sift.detectAndCompute(current_image, None)
+            kp1, des1 = sift.detectAndCompute(grayscale, mask)
+            matchImg = cv2.drawKeypoints(grayscale, kp1)
             images.append({'filename': filename, 'descriptor': des1 })
         db_file = open(images_db_path, 'w')
         pickle.dump(images, db_file)
         db_file.close()
     return images
 
-def find_match(img_to_match_path, images):
+def find_match(img_to_match_path, images, top = 3):
     img_to_match = cv2.imread(img_to_match_path, 0) # trainImage
-    img_to_match = cv2.resize(img_to_match, (0,0), fx=0.10, fy=0.10) #we need to scale it down to a low res
+    img_to_match = cv2.resize(img_to_match, (0,0), fx=0.20, fy=0.20) #we need to scale it down to a low res
     kp2, des2 = sift.detectAndCompute(img_to_match, None)
 
     # FLANN parameters
@@ -41,18 +53,20 @@ def find_match(img_to_match_path, images):
     search_params = dict(checks=5)   # or pass empty dictionary
 
     flann = cv2.FlannBasedMatcher(index_params,search_params)
+    imgMatches = []
     for img in images:
-        print 'Matching...'
         matches = flann.knnMatch(img['descriptor'], des2, k=2)
 
-        print 'Filtering...'
         goodMatches = 0
         # ratio test as per Lowe's paper
         for i,pair in enumerate(matches):
             if len(pair) >= 2:
                 if pair[0].distance < 0.7*pair[1].distance:
                     goodMatches += 1
-        print img['filename'], goodMatches
+        imgMatches.append((img['filename'], goodMatches))
+
+    imgMatches = sorted(imgMatches, key = itemgetter(1), reverse=True)
+    return imgMatches[:top]
 
 def main():
   ####
