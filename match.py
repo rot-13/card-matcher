@@ -42,8 +42,7 @@ def load_images_descriptors(imagesList, images_db_path):
         db_file.close()
     return images
 
-def descriptors_for_input_image(img_to_match_path):
-    img_to_match = cv2.imread(img_to_match_path, 0) # trainImage
+def descriptors_for_input_image(img_to_match):
     img_to_match = cv2.resize(img_to_match, (0,0), fx=0.20, fy=0.20) #we need to scale it down to a low res
     kp2, des2 = sift.detectAndCompute(img_to_match, None)
     return des2

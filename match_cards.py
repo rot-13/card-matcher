@@ -18,7 +18,7 @@ def find_cluster(img):
     cluster_dir = os.path.dirname(imgMatch[0])
     cluster_files = glob.glob(os.path.join(cluster_dir, '*.png'))
     cluster_files = [f for f in cluster_files if not f.endswith('template.png')]
-    
+
     cluster_descriptors = match.load_images_descriptors(cluster_files, os.path.join(cluster_dir, 'images.db'))
     allMatches += match.find_match(input_descriptors, cluster_descriptors)
 
@@ -27,7 +27,8 @@ def find_cluster(img):
   print allMatches[0]
 
 def main():
-  find_cluster(sys.argv[1])
+  img = cv2.imread(sys.argv[1], 0)
+  find_cluster(img)
 
 if __name__ == "__main__":
   main()
