@@ -42,20 +42,22 @@ def load_images_descriptors(imagesList, images_db_path):
         db_file.close()
     return images
 
-def find_match(img_to_match_path, images, top = 3):
+def descriptors_for_input_image(img_to_match_path):
     img_to_match = cv2.imread(img_to_match_path, 0) # trainImage
     img_to_match = cv2.resize(img_to_match, (0,0), fx=0.20, fy=0.20) #we need to scale it down to a low res
     kp2, des2 = sift.detectAndCompute(img_to_match, None)
+    return des2
 
-    # FLANN parameters
-    FLANN_INDEX_KDTREE = 1
-    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 2)
-    search_params = dict(checks=5)   # or pass empty dictionary
+# FLANN parameters
+FLANN_INDEX_KDTREE = 1
+index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 2)
+search_params = dict(checks=5)   # or pass empty dictionary
+flann = cv2.FlannBasedMatcher(index_params,search_params)
 
-    flann = cv2.FlannBasedMatcher(index_params,search_params)
+def find_match(input_descriptors, images, top = 3):
     imgMatches = []
     for img in images:
-        matches = flann.knnMatch(img['descriptor'], des2, k=2)
+        matches = flann.knnMatch(img['descriptor'], input_descriptors, k=2)
 
         goodMatches = 0
         # ratio test as per Lowe's paper

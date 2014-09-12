@@ -12,14 +12,15 @@ def find_cluster(img):
   template_descriptors = match.load_images_descriptors(template_files, './templates.db')
 
   allMatches = []
-  for imgMatch in match.find_match(img, template_descriptors, top=2):
+  input_descriptors = match.descriptors_for_input_image(img)
+  for imgMatch in match.find_match(input_descriptors, template_descriptors, top=2):
     print 'Matching ', os.path.dirname(imgMatch[0]), '...'
     cluster_dir = os.path.dirname(imgMatch[0])
     cluster_files = glob.glob(os.path.join(cluster_dir, '*.png'))
     cluster_files = [f for f in cluster_files if not f.endswith('template.png')]
     
     cluster_descriptors = match.load_images_descriptors(cluster_files, os.path.join(cluster_dir, 'images.db'))
-    allMatches += match.find_match(img, cluster_descriptors)
+    allMatches += match.find_match(input_descriptors, cluster_descriptors)
 
   allMatches = sorted(allMatches, key = itemgetter(1), reverse=True)
 
