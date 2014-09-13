@@ -25,7 +25,7 @@ def find_card_in_clusters(img, resize_factor=0.25):
   print 'Loaded input image in:', time.clock() - start, 'seconds'
   print 'Searching for top clusters...'
   start = time.clock()
-  cluster_matches = match.find_match(input_descriptors, template_descriptors, top=8)
+  cluster_matches = match.find_match(input_descriptors, template_descriptors, top=40)
   print 'Found top clusters in:', time.clock() - start, 'seconds'
   start = time.clock()
   print 'Searching for image in top clusters...'
