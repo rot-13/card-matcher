@@ -9,19 +9,20 @@ from operator import itemgetter
 from multiprocessing import Pool
 from functools import partial
 
-NUM_OF_PROCESSORS = 4
-
 def load_clusters_template_descriptors():
   template_files = glob.glob('./clusters/*/*/template.png')
   template_files = [f for f in template_files if os.stat(f).st_size > 0]
   return match.load_images_descriptors(template_files, './templates.db')
 
-def find_matches_in_clusters(input_descriptors, cluster_matches):
-  p = Pool(NUM_OF_PROCESSORS)
-  clusters_tuples = [(c, input_descriptors) for c in cluster_matches]
-  allMatches = p.map(find_matches_in_cluster, clusters_tuples)
-  allMatches = reduce(lambda x, y: x+y, allMatches)
-  return sorted(allMatches, key = itemgetter(1), reverse=True)
+def find_matches_in_clusters(input_descriptors, cluster_matches, num_of_processors=4):
+    clusters_tuples = [(c, input_descriptors) for c in cluster_matches]
+    if num_of_processors > 1:
+        p = Pool(num_of_processors)
+        allMatches = p.map(find_matches_in_cluster, clusters_tuples)
+    else:
+        allMatches = map(find_matches_in_cluster, clusters_tuples)
+    allMatches = reduce(lambda x, y: x+y, allMatches)
+    return sorted(allMatches, key = itemgetter(1), reverse=True)
 
 def find_card_in_clusters(img, resize_factor=0.25):
   alls = time()
@@ -39,7 +40,7 @@ def find_card_in_clusters(img, resize_factor=0.25):
   print 'Found top clusters in:', time() - start, 'seconds'
   start = time()
   print 'Searching for image in top clusters...'
-  matches = find_matches_in_clusters(input_descriptors, cluster_matches)
+  matches = find_matches_in_clusters(input_descriptors, cluster_matches, num_of_processors=4)
   print 'Found match in:', time() - start, 'seconds'
   print 'Total time:', time() - alls, 'seconds'
 
