@@ -9,16 +9,26 @@ from operator import itemgetter
 from multiprocessing import Pool
 from functools import partial
 
+NUM_OF_PROCESSORS = 4
+
+def load_clusters_template_descriptors():
+  template_files = glob.glob('./clusters/*/*/template.png')
+  template_files = [f for f in template_files if os.stat(f).st_size > 0]
+  return match.load_images_descriptors(template_files, './templates.db')
+
+def find_matches_in_clusters(input_descriptors, cluster_matches):
+  p = Pool(NUM_OF_PROCESSORS)
+  clusters_tuples = [(c, input_descriptors) for c in cluster_matches]
+  allMatches = p.map(find_matches_in_cluster, clusters_tuples)
+  allMatches = reduce(lambda x, y: x+y, allMatches)
+  return sorted(allMatches, key = itemgetter(1), reverse=True)
+
 def find_card_in_clusters(img, resize_factor=0.25):
   alls = time()
   start = time()
   print 'Loading clusters descriptors...'
-  template_files = glob.glob('./clusters/*/*/template.png')
-  template_files = [f for f in template_files if os.stat(f).st_size > 0]
-  template_descriptors = match.load_images_descriptors(template_files, './templates.db')
+  template_descriptors = load_clusters_template_descriptors()
   print 'Loaded clusters in:', time() - start, 'seconds'
-
-  allMatches = []
   start = time()
   print 'Loading input image descriptors...'
   input_descriptors = match.descriptors_for_input_image(img, resize_factor)
@@ -29,15 +39,11 @@ def find_card_in_clusters(img, resize_factor=0.25):
   print 'Found top clusters in:', time() - start, 'seconds'
   start = time()
   print 'Searching for image in top clusters...'
-  p = Pool(4)
-  clusters_tuples = [(c, input_descriptors) for c in cluster_matches]
-  allMatches = p.map(find_matches_in_cluster, clusters_tuples)
-  allMatches = reduce(lambda x, y: x+y, allMatches)
-  allMatches = sorted(allMatches, key = itemgetter(1), reverse=True)
+  matches = find_matches_in_clusters(input_descriptors, cluster_matches)
   print 'Found match in:', time() - start, 'seconds'
   print 'Total time:', time() - alls, 'seconds'
 
-  return allMatches[0]
+  return matches[0]
 
 def find_matches_in_cluster(tup):
     cluster, input_descriptors = tup
