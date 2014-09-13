@@ -3,39 +3,39 @@ import match
 import sys
 import os
 import cv2
-import time
 import json
+from time import time
 from operator import itemgetter
 from multiprocessing import Pool
 from functools import partial
 
 def find_card_in_clusters(img, resize_factor=0.25):
-  alls = time.clock()
-  start = time.clock()
+  alls = time()
+  start = time()
   print 'Loading clusters descriptors...'
   template_files = glob.glob('./clusters/*/*/template.png')
   template_files = [f for f in template_files if os.stat(f).st_size > 0]
   template_descriptors = match.load_images_descriptors(template_files, './templates.db')
-  print 'Loaded clusters in:', time.clock() - start, 'seconds'
+  print 'Loaded clusters in:', time() - start, 'seconds'
 
   allMatches = []
-  start = time.clock()
+  start = time()
   print 'Loading input image descriptors...'
   input_descriptors = match.descriptors_for_input_image(img, resize_factor)
-  print 'Loaded input image in:', time.clock() - start, 'seconds'
+  print 'Loaded input image in:', time() - start, 'seconds'
   print 'Searching for top clusters...'
-  start = time.clock()
-  cluster_matches = match.find_match(input_descriptors, template_descriptors, top=40)
-  print 'Found top clusters in:', time.clock() - start, 'seconds'
-  start = time.clock()
+  start = time()
+  cluster_matches = match.find_match(input_descriptors, template_descriptors, top=4)
+  print 'Found top clusters in:', time() - start, 'seconds'
+  start = time()
   print 'Searching for image in top clusters...'
   p = Pool(4)
   clusters_tuples = [(c, input_descriptors) for c in cluster_matches]
   allMatches = p.map(find_matches_in_cluster, clusters_tuples)
   allMatches = reduce(lambda x, y: x+y, allMatches)
   allMatches = sorted(allMatches, key = itemgetter(1), reverse=True)
-  print 'Found match in:', time.clock() - start, 'seconds'
-  print 'Total time:', time.clock() - alls, 'seconds'
+  print 'Found match in:', time() - start, 'seconds'
+  print 'Total time:', time() - alls, 'seconds'
 
   return allMatches[0]
 
