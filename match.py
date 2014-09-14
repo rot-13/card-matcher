@@ -34,7 +34,7 @@ def load_images_descriptors(imagesList, images_db_path):
 
             # find the keypoints and descriptors with SIFT
             print 'Detecting... ', filename
-            kp1, des1 = sift.detectAndCompute(grayscale, None)
+            kp1, des1 = sift.detectAndCompute(grayscale, mask)
             matchImg = cv2.drawKeypoints(grayscale, kp1)
             images.append({'filename': filename, 'descriptor': des1 })
         db_file = open(images_db_path, 'w')

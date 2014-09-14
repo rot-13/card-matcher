@@ -32,7 +32,7 @@ def find_card_in_clusters(img, resize_factor=0.25):
   print 'Loaded clusters in:', time() - start, 'seconds'
   start = time()
   print 'Loading input image descriptors...'
-  input_descriptors = match.descriptors_for_input_image(img, resize_factor)
+  input_descriptors = match.descriptors_for_input_image(img, 1)
   print 'Loaded input image in:', time() - start, 'seconds'
   print 'Searching for top clusters...'
   start = time()
@@ -40,7 +40,7 @@ def find_card_in_clusters(img, resize_factor=0.25):
   print 'Found top clusters in:', time() - start, 'seconds'
   start = time()
   print 'Searching for image in top clusters...'
-  matches = find_matches_in_clusters(input_descriptors, cluster_matches, num_of_processors=4)
+  matches = find_matches_in_clusters(input_descriptors, cluster_matches, num_of_processors=1)
   print 'Found match in:', time() - start, 'seconds'
   print 'Total time:', time() - alls, 'seconds'
 
