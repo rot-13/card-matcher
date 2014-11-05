@@ -3,3 +3,4 @@ clusters/**/*.*
 templates.db
 *.pyc
 env
+.idea

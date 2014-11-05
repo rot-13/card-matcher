@@ -1,8 +1,5 @@
-import numpy as np
 import cv2
 import match_cards
-import webbrowser
-import os
 import time
 
 cap = cv2.VideoCapture(0)

@@ -8,6 +8,7 @@ from operator import itemgetter
 # Initiate SIFT detector
 sift = cv2.SIFT()
 
+
 def png_to_grayscale_and_mask(img):
   if len(img.shape) > 2 and img.shape[2] > 3:
     mask = img[:,:,3]
@@ -35,7 +36,6 @@ def load_images_descriptors(imagesList, images_db_path):
             # find the keypoints and descriptors with SIFT
             print 'Detecting... ', filename
             kp1, des1 = sift.detectAndCompute(grayscale, mask)
-            matchImg = cv2.drawKeypoints(grayscale, kp1)
             images.append({'filename': filename, 'descriptor': des1 })
         db_file = open(images_db_path, 'w')
         pickle.dump(images, db_file)
