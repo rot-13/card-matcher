@@ -2,3 +2,4 @@ clusters/**/*.*
 !clusters/**/*template*
 templates.db
 *.pyc
+env

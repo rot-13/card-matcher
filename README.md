@@ -1,8 +1,17 @@
-TODO:
+# Installation
+First, create your python virtual env:
 
-    [x] - Cleanup images.db in all cluster folders.  
-    [ ] - Better resize algorithm  
-    [x] - Two step matching process  
-      [x] - Take yon's image templates and run a match against 'em to  
-            find the best cluster  
-      [x] - Run a match process against that specific cluster  
+```
+virtualenv env
+```
+Then, switch to it:
+
+```
+source env/bin/activate
+```
+
+Then, install all the requirements:
+
+```
+pip install -r requirements.txt
+```
